@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+<link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+</head>
+
+<script src="../layuiadmin/layui/layui.js"></script>  
+<script>
+layui.use(['form','table', 'layedit', 'laydate','jquery','flow'], function(){
+	var form=layui.form,
+	layedit=layui.layedit,
+	laydate=layui.laydate,
+	flow=layui.flow,
+	table=layui.table,
+	$=layui.jquery;
+	$("#submit").on("click",function(){
+		var demo=$("#article-title-search").val();
+		if(demo.length==0){
+			alert("请填写内容后再搜索");
+		}else{
+			table.render({
+			    elem: '#article-table'
+			    ,url:'/test/blog_name?blog_name='+demo+''
+			    ,toolbar: true
+			    ,title: '用户数据表'
+			    ,totalRow: true
+			    ,cols: [
+			    	[
+			      {field:'id', title:'ID', width:80, fixed: 'left', unresize: true, sort: true,}
+			      ,{field:'blog_name', title:'标题', width:120, edit: 'text'}
+			      ,{field:'blog_text', title:'文章内容', width:150, edit: 'text'}
+			      ,{field:'blog_date', title:'发布时间', width:100, sort: true, totalRow: true}
+			      ,{field:'blog_click', title:'点击次数', width:80, edit: 'text', sort: true}
+			      ,{field:'blog_comment', title:'是否开启评论', width:120,templet: "#demo1"}
+			      ,{field:'blog_appreciate', title:'是否开启赞赏' ,width:120,templet: "#demo2"}
+			      ,{field:'blog_article', title:'文章摘要', width:100}
+			      ,{field:'type', title:'博客类别',templet:"<div>{{d.type.name}}</div>" ,width:120}
+			      ,{field:'user', title:'发布者',templet:"<div>{{d.user.username}}</div>" ,width:120}
+			      ,{field:'right', width:178, align:'center', toolbar: '#barDemo'}
+			    ]
+			    	]
+			    ,page: true
+			    ,response: {
+			      statusCode: 200 //重新规定成功的状态码为 200，table 组件默认为 0
+			    }
+			    ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+			      return {
+			        "code": res.code, //解析接口状态
+			        "msg": res.msg, //解析提示文本
+			        "count": res.data.total, //解析数据长度 
+			        "data": res.data //解析数据列表
+			      };
+			    }
+			  });
+		}
+	});
+	//监听工具条
+	  table.on('tool(test)', function(obj){
+	    var data = obj.data;
+	    if(obj.event === 'detail'){
+	      layer.msg('ID：'+ data.id + ' 的查看操作');
+	    } else if(obj.event === 'del'){
+	      layer.confirm('真的删除行么', function(index){
+	    	  obj.del();
+		      layer.close(index);
+	    	  $.ajax({
+				  type:"POST",
+				  url:"/delete/blog",
+				  data:{"_method":"delete","id":data.id},
+				  dataType:"json",
+				  statusCode: {404: function() {
+					  alert("网址不存在")
+					  },500:function(){
+						  alert("服务器出错")
+					  },200:function(){
+						alert("删除成功");
+					  }
+				}
+			  });  
+	      });
+	    } else if(obj.event === 'edit'){
+	    	window.location.replace("/update_blogUI?id="+data.id+"");
+	    }
+	  });
+});
+</script>
+<script type="text/html" id="demo1">
+{{#  if(d.blog_comment == 1){ }}
+   <input type="checkbox" checked="checked" name="switch1" lay-skin="switch" lay-text="开启|关闭" title="评论">	
+  {{#  } else {}}
+    <input type="checkbox" name="switch1" lay-skin="switch" lay-text="开启|关闭" title="评论">	
+  {{#  } }}
+
+</script>
+<script type="text/html" id="demo2">
+{{#  if(d.blog_appreciate == 1){ }}
+   <input type="checkbox" checked="checked" name="switch1" lay-skin="switch" lay-text="开启|关闭" title="评论">	
+{{#  } else { }}
+   <input type="checkbox" name="switch1" lay-skin="switch" lay-text="开启|关闭" title="评论">	
+{{#  } }}
+</script>
+<script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<body>
+
+	<div class="layui-fluid layui-anim layui-anim-upbit">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-sm12">
+            <div class="layui-card">
+                <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                    <div id="user-table-search" class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">文章标题：</label>
+                                <div class="layui-input-block">
+                                    <input class="layui-input" id="article-title-search" name="id" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button id="submit" class="layui-btn layuiadmin-btn-forum-list" data-type="reload"><i
+                                        class="layui-icon layui-icon-search layuiadmin-button-btn"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <table id="article-table" lay-filter="test"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+<link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+<link rel="stylesheet" href="/layuiadmin/style/login.css" media="all">
+</head>
+</head>
+<script type="text/javascript" src="../layui/layui.js" charset="UTF-8"></script>
+<script type="text/javascript">
+layui.use(['form','jquery','layedit',"layer"], function(){
+	var form = layui.form
+	,$=layui.jquery
+	,layer=layui.layer
+	,layedit=layui.layedit;
+	  //自定义验证规则
+	  form.verify({
+	    title: function(value){
+	      if(value.length < 5){
+	        return '账号标题至少得5个字符啊';
+	      }
+	    }
+	    ,pass: [
+	      /^[\S]{5,12}$/
+	      ,'密码必须6到12位，且不能出现空格'
+	    ]
+	    ,content: function(value){
+	      layedit.sync(editIndex);
+	    }
+	  });
+	  var demo=$("#demo").val();
+	  if(demo!=null){
+		  layer.msg("账号或密码错误");
+	  }
+	  
+});
+</script>
+<body>
+	<form action="/user_admin" method="get">
+	<input type="hidden" id="demo" th:if="${not #strings.isEmpty(msg)}" th:value="${msg}">
+	<div class="layadmin-user-login layadmin-user-display-show" id="LAY-user-login" style="display: none;">
+    <div class="layadmin-user-login-main">
+      <div class="layadmin-user-login-box layadmin-user-login-header">
+        <h2>管理员账号登录</h2>
+      </div>
+      <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
+        <div class="layui-form-item">
+          <label class="layadmin-user-login-icon layui-icon layui-icon-username" for="LAY-user-login-username"></label>
+          <input type="text" name="username" id="LAY-user-login-username" lay-verify="title" placeholder="用户名" class="layui-input">
+        </div>
+        <div class="layui-form-item">
+          <label class="layadmin-user-login-icon layui-icon layui-icon-password" for="LAY-user-login-password"></label>
+          <input type="password" name="password" id="LAY-user-login-password" lay-verify="pass" placeholder="密码" class="layui-input">
+        </div>
+        <div class="layui-form-item">
+          <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="LAY-user-login-submit">账 号 登 录</button>
+        </div>
+      </div>
+    </div>
+</div>
+</form>
+</body>
+</html>

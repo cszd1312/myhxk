@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<div class="layui-col-md4">
+	<div class="layui-card">
+                <div class="layui-card-header">最新评论</div>
+                <div class="layui-card-body layadmin-takerates">
+                    <p>
+                        <span class="layui-word-aux">文章：</span>
+                        <a th:href="'/article/'+${latestComment.articleId}"
+                           target="_blank">[[${latestComment.title}]]</a>
+                    </p>
+                    <hr>
+                    <p>
+                        <span class="layui-word-aux">用户：</span>
+                        <img th:src="${latestComment.avatar}" style="width: 40px;" class="layui-circle">
+                        [[${latestComment.nickname}]]
+                    </p>
+                    <hr>
+                    <p>
+                        <span class="layui-word-aux">评论：</span>
+                        [[${latestComment.comment.substring(0,#strings.length(latestComment.comment)>100?100:#strings.length(latestComment.comment))}]]
+                    </p>
+                    <hr>
+                    <p th:inline="text">
+                        <span class="layui-word-aux">时间：</span>
+                        [[${#temporals.format(latestComment.post, 'yyyy/MM/dd HH:mm')}]]
+                    </p>
+                </div>
+            </div>
+</div>
+</body>
+</html>

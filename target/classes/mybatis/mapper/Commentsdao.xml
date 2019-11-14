@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sprinboot.hxk.dao.Commentsdao">
+	<resultMap type="com.sprinboot.hxk.pojo.Comments" id="demo">
+		<id column="cid" property="id"/>
+		<result column="user_id" property="user_id"/>
+		<result column="reply_id" property="reply_id"/>
+		<result column="comment_date" property="comment_date"/>
+		<result column="comment_text" property="comment_text"/>
+		<result column="blog_id" property="blog_id"/>
+		<association property="user" column="user_id" select="com.sprinboot.hxk.dao.Userdao.querybyid">
+				<id column="uid" property="id"/>
+				<result column="username" property="username"/>
+				<result column="password" property="password"/>
+		</association>
+		<association property="user2" column="reply_id" select="com.sprinboot.hxk.dao.Userdao.querybyid">
+			<id column="uid" property="id"/>
+			<result column="username" property="username"/>
+			<result column="password" property="password"/>
+		</association>
+	</resultMap>
+	<resultMap type="com.sprinboot.hxk.pojo.Comments" id="demo2">
+		<id column="cid" property="id"/>
+		<result column="user_id" property="user_id"/>
+		<association property="user" column="user_id" select="com.sprinboot.hxk.dao.Userdao.querybyid">
+				<id column="uid" property="id"/>
+				<result column="username" property="username"/>
+				<result column="password" property="password"/>
+		</association>
+	</resultMap>
+	<select id="querylistbyblogid" resultMap="demo">
+		SELECT * FROM tbl_comments where blog_id=#{id} order by comment_date DESC
+	</select>
+	<select id="querybyid" resultMap="demo2">
+		SELECT * FROM tbl_comments WHERE cid=#{id}
+	</select>
+	<insert id="insertcomment" useGeneratedKeys="true" keyProperty="id" parameterType="com.sprinboot.hxk.pojo.Comments">
+		insert into tbl_comments values(default,#{user_id},#{reply_id},#{comment_date},#{comment_text},#{blog_id})
+	</insert>
+</mapper>

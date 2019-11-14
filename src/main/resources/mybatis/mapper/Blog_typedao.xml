@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sprinboot.hxk.dao.Blog_typedao">
+	<select id="querytypelist" parameterType="com.sprinboot.hxk.pojo.Blog_type" resultType="com.sprinboot.hxk.pojo.Blog_type">
+		select * from tbl_type where 1=1
+		<if test="name!=null">
+			and name=#{name}
+		</if>
+	</select>
+	<select id="querybyid" resultType="com.sprinboot.hxk.pojo.Blog_type">
+		select * from tbl_type where id=#{id}
+	</select>
+	<insert id="inserttypebyname" useGeneratedKeys="true" keyProperty="id" parameterType="com.sprinboot.hxk.pojo.Blog_type">
+		insert into tbl_type values(default,#{name})
+	</insert>
+	<delete id="deletetype" parameterType="Integer">
+		delete from tbl_type where id=#{id}
+	</delete>
+</mapper>

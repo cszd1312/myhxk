@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+<link rel="stylesheet" href="/layuiadmin/layui/css/layui.css"  media="all">
+<style type="text/css">
+.demo{
+	margin : 25px 25px 25px 25px;
+	width: 166px;
+	height: 136px;
+	text-align:center;
+	box-shadow:0 0 2px 2px #f8f8f8;
+	/*webkit-filter: drop-shadow(10px 10px 10px rgba(0,0,0,.5));
+     filter: drop-shadow(10px 10px 10px rgba(0,0,0,.5));
+     transition-duration:0.1s;
+     */
+     transition: all 0.3s;
+     -moz-box-shadow: 2px 2px 10px #909090;
+	 -webkit-box-shadow: 2px 2px 10px #909090;
+	 box-shadow:2px 2px 10px #909090;
+}
+.box{
+	display: flex;
+	flex-flow:row wrap;
+}
+
+</style>
+</head>
+<script src="../../layuiadmin/layui/layui.js?t=1"></script>  
+<script>
+layui.use(['layedit','jquery','upload','layer'], function(){
+	  var layedit = layui.layedit,
+	  upload = layui.upload,
+	  layer=layui.layer,
+	  $=layui.jquery;
+	  layedit.build('editormd-markdown-doc'); //建立编辑器
+	  var index1=layedit.build('editormd-markdown-doc');
+	  
+	  var uploadInst = upload.render({
+		    elem: '#img_title' //绑定元素
+		    ,url: '/photos/img_src' //上传接口
+		    ,done: function(res){
+		      $("#img_src").attr("value",res.data.src);
+		      $("#img-photo").attr("src",res.data.src);
+		    }
+		    ,error: function(){
+		      //请求异常回调
+		    }
+		  });
+	  	  var img_src="";
+	  	  var img_name="";
+		  var uploadInst = upload.render({
+			    elem: '#img_picture' //绑定元素
+			    ,url: '/photos/img_src' //上传接口
+			    ,multiple: true
+			    ,accept:"images"
+			    ,number:5
+			    ,done: function(res){
+			      img_src+=","+res.data.src;   //图片路径存储
+			      img_name+=","+res.data.title;
+			      $("#picture_name").attr("value",img_name);
+			      $("#picture_src").attr("value",img_src);
+$("#picture_display").append("<div class='demo'><img name='img' src="+res.data.src+" style='width: 150px;height: 100px'/><div>"+res.data.title+"</div></div>");
+			    }
+			    ,error: function(){
+			      //请求异常回调
+			      layer.msg("上传文件出现异常");
+			    }
+			  });
+	  $("#demo").on("click",function(){
+		if($("[name='img_title']").val().length==0){
+			alert("标题不能为空");
+			return;
+		}
+		if($("[name='img_src']").val().length==0){
+			alert("相册封面必须上传");
+			return;
+		}
+		$.ajax({
+			  type:"POST",
+			  url:"/insert/photo",
+			  data:$("#frm").serialize(),
+			  statusCode: {404: function() {
+				   layer.msg("端口出现异常");
+				  },500:function(){
+					  layer.msg("上传照片出现异常");
+					  location.reload();//刷新页面
+				  },200:function(){
+					  alert("添加成功");
+					  sleep(500);
+					  window.parent.location.reload();
+				  }
+				  }
+			});
+	  });
+ function sleep(n) { //n表示的毫秒数
+      var start = new Date().getTime();
+      while (true) if (new Date().getTime() - start > n) break;
+  }
+});
+  
+
+</script>
+<body>
+<form id="frm" action="/insert/photo" method="post">
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">添加相册</div>
+          <div class="layui-card-body" pad15>
+            <div class="layui-form" lay-filter="">
+              <div class="layui-form-item">
+                <label class="layui-form-label">相册标题</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="img_title" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">上传相册封面照</label>
+                 <div class="layui-input-inline">
+                  <img id="img-photo" style="width: 100px;height: 50px">
+                </div>
+                <div class="layui-input-inline">
+                  <button type="button" class="layui-btn" id="img_title">
+					  <i class="layui-icon">&#xe67c;</i>上传图片
+				  </button>
+				  <input type="hidden" id="img_src" name="img_src">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">上传相册照片</label>
+                		上传照片展示区(ps:一次只能上传5张)
+                <div id="picture_display" class="box">
+                
+                </div>
+               <input type="hidden" id="picture_name" name="picture_img_title">
+ 				<input type="hidden" id="picture_src" name="picture_img_src">
+                <div class="layui-input-block">
+                  <button type="button" class="layui-btn" id="img_picture">
+					  <i class="layui-icon">&#xe67c;</i>上传图片
+				  </button>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button id="demo" type="button" class="layui-btn" >确认添加</button>
+                  <button type="reset" class="layui-btn layui-btn-primary">重新填写</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </form>
+</body>
+</html>

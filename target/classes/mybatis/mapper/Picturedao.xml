@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sprinboot.hxk.dao.Picturedao">
+	<select id="querylistbupid" resultType="com.sprinboot.hxk.pojo.Picture">
+		select * from tbl_picture where img_pid=#{id}
+	</select>
+	<insert id="insertpicture" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		insert into tbl_picture values(default,#{img_src},#{img_title},#{img_name},#{img_pid})
+	</insert>
+	<delete id="deletepicture">
+		delete from tbl_picture where id=#{id}
+	</delete>
+</mapper>

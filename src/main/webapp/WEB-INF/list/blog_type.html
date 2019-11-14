@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+  <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+</head>
+<script src="../layuiadmin/layui/layui.js"></script>  
+<script>
+layui.use(['form','jquery'], function(){
+	var form=layui.form,
+	$=layui.jquery;
+	$("a").on("click",function(){
+		var demo=$(this).attr("href");
+		alert(demo);
+		$.ajax({
+			  type:"POST",
+			  url:demo,
+			  dataType:"json",
+			  statusCode: {404: function() {
+				    alert("删除对象不存在");
+				    window.location.reload();
+				  },500:function(){
+					  alert("服务器出现异常错误");
+				  },204:function(){
+					  alert("删除成功");
+					  window.location.reload();
+				  }
+				  }
+		});
+		return false;
+	});
+	$("#cate-add").on("click",function(){
+		var demo=$("#name").val();
+		if(demo.length==0){
+			alert("文本框必须填写内容");
+		}else{
+			$.ajax({
+				type:"POST",
+				url:"/insert/blog_type",
+				data:{"name":demo},
+				datatype:"json",
+				statusCode:{400: function(){
+					alert("错误的请求参数");
+					window.location.reload();
+				},500:function(){
+					alert("服务器出现异常");
+				},201:function(){
+					alert("添加数据成功");
+					window.location.reload();
+				}
+				}
+			});
+		}
+	});
+	$("#cate-search").on("click",function(){
+		var demo=$("#name").val();
+		if(demo.length==0){
+			alert("文本框必须填写内容");
+			return false;
+		}
+		
+	});
+});
+</script>
+<body>
+	<form action="/type_list" id="frm" method="get">
+	<div class="layui-fluid layui-anim layui-anim-upbit" id="LAY-catetag">
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md6">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend><i class="fa fa-navicon"></i> 分类管理</legend>
+            </fieldset>
+            <div class="layui-form-item">
+                <div class="layui-input-block" style="margin-left: 0;">
+                    <input type="text" id="name" name="name" lay-verify="required"
+                          placeholder="请输入分类名 "
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div style="margin-top: 10px;">
+                    <button class="layui-btn layui-btn-primary" id="cate-search"><i class="fa fa-search"></i> 搜索
+                    </button>
+                    <button class="layui-btn" id="cate-add"><i class="fa fa-plus"></i> 添加</button>
+                </div>
+            </div>
+     </form>
+            <hr>
+            <div id="carts">
+	            <div class="layui-btn layui-btn-radius layui-btn-primary" th:each="type :${typelist}">
+		            <i class="layui-icon layui-icon-note" th:text="${type.name}"></i>
+			        <a th:href="@{'/delete/blog_type/'+${type.id}}"><i class="layui-icon layui-icon-close"></i></a>
+	            </div> 
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sprinboot.hxk.dao.Albumdao">
+	<select id="querylist" resultType="com.sprinboot.hxk.pojo.Album">
+		select * from tbl_album
+	</select>
+	<select id="querybyid" resultType="com.sprinboot.hxk.pojo.Album">
+		select * from tbl_album where id=#{id}
+	</select>
+	<insert id="insertalbum" useGeneratedKeys="true" keyColumn="id" keyProperty="id" parameterType="com.sprinboot.hxk.pojo.Album">
+		insert into tbl_album values(default,#{img_src},#{img_title})
+	</insert>
+	<delete id="deleteAlbum">
+		delete from tbl_album where id=#{id}
+	</delete>
+	<select id="queryalbumlike" resultType="com.sprinboot.hxk.pojo.Album">
+		select * from tbl_album where img_title like '%${img_title}%'
+	</select>
+</mapper>

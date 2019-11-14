@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sprinboot.hxk.dao.Blogdao">
+	<insert id="insertblogbyblog" useGeneratedKeys="true" keyColumn="bid" keyProperty="id" parameterType="com.sprinboot.hxk.pojo.Blog">
+		insert into 
+		tbl_blog values(default,#{blog_name},#{blog_text},#{blog_date},#{blog_click},#{blog_comment}
+		,#{blog_appreciate},#{blog_article},#{type.id},#{blog_user}
+		)
+	</insert>
+	<resultMap type="com.sprinboot.hxk.pojo.Blog" id="demo">
+		<id column="bid" property="id"/>
+		<result column="blog_type" property="blog_type"/>
+		<result column="blog_user" property="blog_user"/>
+		<association property="type" column="blog_type" select="com.sprinboot.hxk.dao.Blog_typedao.querybyid">
+			<id column="id" property="id"/>
+		</association>
+		<association property="user" column="blog_user" select="com.sprinboot.hxk.dao.Userdao.querybyid">
+			<id column="uid" property="id"/>
+		</association>
+		<association property="blog_img" column="bid" select="com.sprinboot.hxk.dao.Blogimgdao.querybybid">
+			<id column="id" property="id"/>
+		</association>
+	</resultMap>
+	<select id="querybloglist" resultMap="demo">
+		SELECT * FROM tbl_blog 
+		<where>
+			<if test="typename!=null and typename!=''">
+				blog_type=${typename}
+			</if>
+		</where>
+		ORDER BY blog_date DESC
+	</select>
+	<select id="querybyid" resultMap="demo">
+		select * from tbl_blog where bid=#{id}
+	</select>
+	<select id="querylikename" resultMap="demo">
+		select * from tbl_blog where blog_name like '%${name}%'
+	</select>
+	<delete id="deleteblogbyid">
+		delete from tbl_blog where bid=#{id}
+	</delete>
+	<update id="updatebyblog" parameterType="com.sprinboot.hxk.pojo.Blog">
+		update tbl_blog
+		<set>
+			<if test="blog_name!=null">
+			blog_name=#{blog_name},
+			</if>
+			<if test="blog_type!=null">
+			blog_type=#{blog_type},
+			</if>
+			<if test="blog_text!=null">
+			blog_text=#{blog_text},
+			</if>
+			<if test="blog_article!=null">
+			blog_article=#{blog_article},
+			</if>
+			<if test="blog_date!=null">
+			blog_date=#{blog_date},
+			</if>
+			<if test="blog_click!=null">
+			blog_click=#{blog_click},
+			</if>
+			<if test="blog_comment!=null">
+			blog_comment=#{blog_comment},
+			</if>
+			<if test="blog_appreciate!=null">
+			blog_appreciate=#{blog_appreciate},
+			</if>
+			<if test="blog_user!=null">
+			blog_user=#{blog_user}
+			</if>
+		</set>
+		where bid=#{id}
+	</update>
+	<update id="updateblogbyclick">
+		UPDATE tbl_blog SET blog_click=blog_click+1 WHERE bid=#{id}
+	</update>
+</mapper>

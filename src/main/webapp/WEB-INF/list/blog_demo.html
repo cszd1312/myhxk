@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" href="../layuiadmin/layui/css/layui.css"  media="all">
+  <link rel="stylesheet" href="../layuiadmin/style/admin.css" media="all">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="/blog/css/style.css">
+  <link rel="stylesheet" href="/plugins/animate/animate.min.css">
+</head>
+<script type="text/javascript" src="../layuiadmin/layui/layui.js" charset="UTF-8"></script>
+<script type="text/javascript">
+layui.use(['form', 'layedit', 'laydate','jquery','flow'], function(){
+	var form=layui.form,
+	layedit=layui.layedit,
+	laydate=layui.laydate,
+	flow=layui.flow,
+	$=layui.jquery;
+	var dizhi=window.location.pathname;     //获取当前URL地址 :/blog/{id}
+	layedit.set({
+		  uploadImage: {
+		    url: '/upload/blog_img' //接口url
+		    ,type: 'POST' //默认post
+		  }
+		});
+ 	var demo=layedit.build('comment-input', {
+ 		tool:['strong' //加粗
+ 			  ,'italic' //斜体
+ 			  ,'underline' //下划线
+ 			  ,'del' //删除线
+ 			  ,'|' //分割线
+ 			  ,'left' //左对齐
+ 			  ,'center' //居中对齐
+ 			  ,'right' //右对齐
+ 			  ,'link' //超链接
+ 			  ,'unlink' //清除链接
+ 			  ,'face' //表情
+ 			  ]
+ 		});
+ 	var blog_id=$("#blog_id").val();
+ 	var comment=$("#blog_comment").attr("value");
+ 	flow.load({
+		    elem: '#demo' //指定列表容器
+		    ,done: function(page, next){ //到达临界点（默认滚动触发），触发下一页
+		      var lis = [];
+		      //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+		      $.get('/comment/paging?blog='+blog_id+'&page='+page, function(res){
+		        //假设你的列表返回在data集合中
+		        layui.each(res.list, function(index, item){
+		        	var html='';
+		        	html+='<div class="layui-field-box">';
+		        	html+='<div class="layui-row comment-block">';
+		        	html+='<div class="layui-row">';
+		        	html+='<div class="layui-col-md1 layui-col-xs1 comment-avatar">';
+		        	html+='<img alt="头像" src="'+item.user.user_img+'" class="layui-circle" style="width: 50px;height: 50px">';
+		        	html+='</div>';
+		        	html+='<div class="layui-col-md10 layui-col-xs8">';
+		        	html+='<i class="fa fa-user-o"></i> <span class="comment-user">'+item.user.username+'</span><br/>';
+		        	html+='<i class="fa fa-clock-o"></i> <span class="comment-datetime">'+item.comment_date+'</span>';
+		        	html+='</div>';
+		        	html+='</div>';
+		        	html+='<div class="layui-row comment-block-content">';
+		        	if(item.reply_id!=0){
+		        		html+='<p>@<a href="/query/user/'+item.user2.id+'" style="color:#1e9fff">'+item.user2.username+'</a></p>'
+		        	}
+		        	html+=''+item.comment_text+'';
+		        	html+='</div>';
+		        	html+='<div class="layui-row" style="text-align: right;">';
+		        	html+='<a href="'+item.id+'" class="huifu">回复</a>';
+		        	html+='</div>';
+		        	html+='<hr>';
+		        	html+='</div>';
+		        	html+='</div>';
+		          lis.push(html);
+		        }); 
+		        //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+		        //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+				page=res.list.endRow
+		        next(lis.join(''), page<res.total);
+		      });
+		    }
+		});
+ 	
+ 	$("#submit").on("click",function(){
+		var a=layedit.getContent(demo);
+		if(a.length==0){
+			alert("请填写内容后，再发表")
+		}else{
+			$.ajax({
+				  type:"POST",
+				  url:"/insert/commnts",
+				  data:{"comment_text":a,"blog_id":blog_id} ,
+				  dataType:"json",
+				  statusCode: {404: function() {
+					    alert("当前未登陆，请登陆后再继续此操作");
+					    window.location.replace("/?dizhi="+dizhi+"");
+					  },500:function(){
+						  alert("500");
+					  },200:function(){
+						  alert("200");
+						  window.location.reload();
+					  }
+					  }
+		});
+		}
+ 	});
+ 	$("#blog-body").on("click",".huifu",function(){
+ 		var reply_id=$(this).attr("href");
+ 		var blog_id=$("#blog_id").val();
+ 		var userid=$("[name='userid']").val();
+ 			layer.open({
+ 			  type: 2,
+ 			  title: "回复评论",
+ 			  area: ['500px', '500px'],
+ 			  content: '/wenben',
+ 			  success:function(layero,index){
+ 				 var iframeWindow = window['layui-layer-iframe'+ index]  //获取iframe窗口
+ 				 iframeWindow.params= reply_id
+ 				 iframeWindow.params2= blog_id
+ 				 iframeWindow.params3=userid   //当前用户ID
+ 				iframeWindow.params4=dizhi    //当前网址
+ 			  }
+ 			});
+ 			return false;
+ 	});
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<body>
+<input type="hidden" name="userid" th:if="${user!=null}" th:value="${user}">
+<div class="header">
+    <div class="layui-container">
+        <div class="layui-row nav-header">
+            <!--logo-->
+            <div class="layui-col-xs9 layui-col-sm3 layui-col-md3  animated rubberBand">
+                <a class="logo" href="//"><i class="fa fa-graduation-cap"></i>&nbsp;传说中的1312</a>
+            </div>
+            <!--logo结束-->
+            <!--index页面的右上方导航-->
+            <div class="layui-col-xs3 layui-col-sm-offset2 layui-col-sm7 layui-hide-md layui-hide-lg nav-btn">
+                <a href="javascript:void(0);" id="side-nav"><i class="fa fa-navicon"></i> </a>
+            </div>
+            <div class="layui-col-md-offset2 layui-col-md7 layui-hide-sm layui-hide-xs layui-show-lg-inline-block layui-show-md-inline-block nav-btn">
+                <a href="/list"><i class="layui-icon">&#xe68e;</i> HOME</a>
+                <a href="/note"><i class="layui-icon">&#xe609;</i> NOTE</a>
+                <a href="#" target="_blank"><i class="fa fa-github"
+                                                                           style="font-size: 18px;"></i> GITHUB</a>
+                <a href="#"><i class="layui-icon">&#xe715;</i> MINE</a>
+            </div>
+            <!--右上方导航结束-->
+        </div>
+    </div>
+</div>
+<!--顶部导航栏结束-->
+<hr class="header-hr">
+<script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget/autoload.js"></script>
+<input type="hidden" id="blog_id" th:value="${blog.id}">
+<input type="hidden" id="blog_appreciate" th:value="${blog.blog_appreciate}">
+<div id="blog-body" class="layui-container">
+    <div class="layui-row layui-col-space10">
+        <div id="blog-info" class="layui-col-md9 animated fadeInUp">
+            <!--博文开始-->
+            <div class="layui-collapse layui-panel layui-article">
+                <div class="layui-colla-item">
+                    <div class="layui-colla-content layui-show layui-article">
+                        <fieldset class="layui-elem-field layui-field-title">
+                            <legend class="center-to-head"><a th:text="${blog.blog_name}" th:href="@{/blog/{id}(id=${blog.id})}"></a>
+                            </legend>
+                        </fieldset>
+                        <div class="layui-text layui-blog-body">
+                            <div class="layui-row">
+                                <div class="layui-col-md6 layui-col-md-offset3 text-center blog-base-info">
+                                    <span th:text="${#dates.format(blog.blog_date,'yyyy-MM-dd HH:mm:ss')}"><i class="fa fa-clock-o"></i></span>
+                                    <span th:text="${blog.user.username}"><i class="fa fa-user-o"></i><svg class="icon" aria-hidden="true"><use
+                                            xlink:href="#icon-renzhengkaobei"></use></svg></span>
+                                    <span><i class="fa fa-comment-o">评论数</i></span>
+                                    <span th:text="${blog.blog_click}"><i class="fa fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <hr>
+                            &nbsp;
+                           	<div th:utext="${blog.blog_text}" id="blog_text"></div>
+                       </div>
+                       <div class="layui-row text-center">
+                            <div class="layui-btn layui-btn-warm"><i class="layui-icon layui-icon-praise">打赏</i></div>
+                            <div class="layui-btn"><i class="layui-icon layui-icon-praise">赞</i></div>
+                       </div>
+ 					</div>
+                </div>
+            </div>
+            <!-- 博文结束 -->
+            <!-- 评论框 -->
+            <div class="layui-collapse layui-panel layui-article">
+                <div class="layui-colla-item">
+                    <div id="pinglun" class="layui-colla-content layui-show layui-article comment">
+                    	<p th:if="${blog.blog_comment==1}" th:text="关闭评论"></p>
+                        <fieldset class="layui-elem-field layui-field-title" th:if="${blog.blog_comment==0}">
+                            <legend>随便说两句</legend>
+                            <div class="layui-field-box">
+                                <label for="comment-input"></label>
+                                <textarea id="comment-input"></textarea>
+                            </div>
+                            <button id="submit" class="layui-btn layui-btn-sm" style="float: right;width: 120px;">发表</button>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+            <!-- 评论框结束 -->
+            
+            <!-- 评论区开启 -->
+            <div class="layui-collapse layui-panel layui-article">
+                <div class="layui-colla-item">
+                    <div class="layui-colla-content layui-show layui-article comment">
+                        <fieldset class="layui-elem-field layui-field-title">
+                            <legend>评论区</legend>
+                            <ul id="demo">
+                            <span id="reply"></span>
+                           </ul>
+                        </fieldset>
+                    </div>
+				  </div>
+				</div>
+				<!-- 评论区结束 -->   
+    </div>
+  </div>
+</div>                              
+</body>
+</html>

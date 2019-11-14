@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="/layui/css/layui.css" media="all">
+<link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+<style type="text/css">
+.demo{
+	margin : 25px 25px 25px 25px;
+	width: 166px;
+	height: 166px;
+	text-align:center;
+	box-shadow:0 0 2px 2px #f8f8f8;
+	display: inline-block;
+    position: relative;
+	/*webkit-filter: drop-shadow(10px 10px 10px rgba(0,0,0,.5));
+     filter: drop-shadow(10px 10px 10px rgba(0,0,0,.5));
+     transition-duration:0.1s;
+     */
+     transition: all 0.3s;
+     -moz-box-shadow: 2px 2px 10px #909090;
+	 -webkit-box-shadow: 2px 2px 10px #909090;
+	 box-shadow:2px 2px 10px #909090;
+}
+.box{
+	display: flex;
+	flex-flow:row wrap;
+}
+.box .delete {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 30px;
+    height: 30px;
+    display: none;
+}
+.box .delete2 {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 30px;
+    height: 30px;
+    display: none;
+}
+</style>
+</head>
+<script type="text/javascript" src="/layuiadmin/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript">
+layui.use(['form', 'layedit', 'laydate','jquery','upload'], function(){
+	$=layui.jquery,
+	layer=layui.layer,
+	upload=layui.upload;
+	 //普通图片上传
+	  var uploadInst = upload.render({
+	    elem: "#test1"
+	    ,url: '/upload/pictyure'
+	   	, before: function(obj){
+		  var demo=$("[name='demo']").val();
+		  this.data={'id':demo};
+		  }
+	   	,done: function(res){
+	   		console.log(res)
+	   	    var html="<div class='demo'>"
+			  html+="<img name='img' src='"+res.data.src+"' style='width: 150px;height: 100px' />"
+			  html+="<input type='hidden' value='"+res.msg+"'>"
+			  html+="<img src='/no.png' class='delete2'/>"
+			  html+="<div>"+res.data.title+"</div>"
+	          html+="</div>"
+	       $(".box").append(html);
+	   	}
+   	    ,error: function(){
+
+   	    }
+	   	});
+
+	
+	$("body").on("mouseenter", "[name='img']", function() {
+		$(this).next().next().css("display","inline");
+    });
+    $("body").on("mouseleave", "[name='img']", function() {
+    	$(this).next().next().css("display","none"); 
+    });
+	$("body").on("click","[name='button']",function(){
+		var demo=$(this).parent().prev().prev().prev().val();//获取相册的ID
+		var title=$(this).parent().prev().text(); //获取相册标题
+		$.ajax({
+			  type:"GET",
+			  url:"/query/picture",
+			  data:{"pid":demo},
+			  dataType:"json",
+			  statusCode: {404: function() {
+				    alert("端口异常");
+				  },500:function(){
+					alert("失败");
+				  },200:function(data){
+					 if(Object.keys(data).filter(key=>!isNaN(+key)).length==0){
+						$(".demo").remove();
+						$(".box").append("相册内没有照片");
+						$(".box").append("<input type='hidden' name='demo' value="+demo+">");
+						$("#upload").attr("style","display:inline;");
+					 }else{
+						 $(".box").empty();
+						 $(".demo").remove();
+						 var html="";
+						 for(var i=0;i<data.length;i++){
+				        	   	  html+="<div class='demo'>"
+								  html+="<img name='img' src='"+data[i].img_src+"' style='width: 150px;height: 100px' />"
+								  html+="<input type='hidden' value='"+data[i].id+"'>"
+								  html+="<img src='/no.png' class='delete2'/>"
+								  html+="<div>"+data[i].img_title+"</div>"
+						          html+="</div>"
+				          }
+						 $(".box").append(title+"的相册");
+						 $(".box").append(html);
+						 $(".box").append("<input type='hidden' name='demo' value="+demo+">");
+						 $("#upload").attr("style","display:inline;");
+					 }
+				  }
+				  }
+		});
+	});
+	$("body").on("click", ".delete2",function(){
+		var demo=$(this).prev().val();   //获取相册ID
+		var div=$(this).parent();		//获取包裹相册DIV,用于删除节点
+		tips = layer.confirm('确认删除?',
+				{
+					icon: 3, 
+					title:'提示',
+					yes: function(index, layero){
+						$.ajax({
+							  type:"POST",
+							  url:"/delete/picture/"+demo,
+							  data:{"_method":"delete"},
+							  dataType:"json",
+							  statusCode: {404: function() {
+								    alert("端口异常");
+								  },500:function(){
+									alert("删除失败");
+								  },200:function(){
+									  alert("删除成功");
+									  div.remove();
+								  }
+								  }
+					});
+		    			layer.close(index); //如果设定了yes回调，需进行手工关闭
+		  			}
+				}, 
+				function(index){
+	  				layer.close(index);
+				}
+			);
+	});
+	$("body").on("click", ".delete",function(){
+		var demo=$(this).prev().val();   //获取相册ID
+		var div=$(this).parent();		//获取包裹相册DIV,用于删除节点
+		tips = layer.confirm('确认删除?(如果相册内有照片则会删除失败)', 
+				{
+					icon: 3, 
+					title:'提示',
+					yes: function(index, layero){
+						$.ajax({
+							  type:"POST",
+							  url:"/delete/photos/"+demo,
+							  data:{"_method":"delete"},
+							  dataType:"json",
+							  statusCode: {404: function() {
+								    alert("端口异常");
+								  },500:function(){
+									alert("删除失败");
+								  },200:function(){
+									  alert("删除成功");
+									  div.remove();
+								  }
+								  }
+					});
+		    			layer.close(index); //如果设定了yes回调，需进行手工关闭
+		  			}
+				}, 
+				function(index){
+	  				layer.close(index); 
+				}
+			);
+	});
+	$("#click").on("click",function(){
+		var demo=$("[name='id']").val();
+		if(demo.length==0){
+			layer.msg("相册标题不能为空");
+			return;
+		}
+			$.ajax({
+				  type:"GET",
+				  url:"/query/photos",
+				  data:{"img_title":demo},
+				  dataType:"json",
+				  statusCode: {404: function() {
+					    alert("端口异常");
+					  },500:function(){
+						alert("删除失败");
+					  },200:function(data){
+						  $("#upload").attr("style","display:none;");
+						 if(Object.keys(data).filter(key=>!isNaN(+key)).length==0){
+							$(".demo").remove();
+							$(".box").append("没有找到相册");
+						 }else{
+							 $(".box").empty();
+							 $(".demo").remove();
+					          for(var i=0;i<data.length;i++){
+					        	  var html="<div class='demo'>"
+									  html+="<img name='img' src='"+data[i].img_src+"' style='width: 150px;height: 100px' />"
+									  html+="<input type='hidden' value='"+data[i].id+"'>"
+									  html+="<img name=no' src='/no.png' class='delete'/>"
+									  html+="<div>"+data[i].img_title+"</div>"
+									  html+="<div><button name='button' class='layui-btn layui-btn-sm'>进入相册</button></div>"
+							          html+="</div>"
+							    $(".box").append(html);
+					          }
+							
+						 }
+					  }
+					  }
+			});
+		
+	});
+});
+</script>
+<body>
+<div class="layui-fluid layui-anim layui-anim-upbit" id="LAY-note-list">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-sm12">
+            <div class="layui-card">
+                <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                    <div id="user-table-search" class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">相册标题：</label>
+                                <div class="layui-input-block">
+                                    <input class="layui-input" id="title-search" name="id" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button id="click" class="layui-btn layuiadmin-btn-forum-list" data-type="reload"><i
+                                        class="layui-icon layui-icon-search layuiadmin-button-btn"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <div id="picture_display" class="box">
+					</div>
+					<div class='layui-inline'>
+					 	<div id="upload" class='layui-upload' style="display:none;">
+	                  	<button type="button" class="layui-btn" id="test1">
+						  <i class="layui-icon">&#xe67c;</i>添加图片
+						</button>
+					  	</div>
+				  	</div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

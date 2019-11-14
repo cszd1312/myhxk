@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+  <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+  <link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+</head>
+<script type="text/javascript" src="../layuiadmin/layui/layui.js" charset="UTF-8"></script>
+<script>
+layui.use(['layedit','jquery','upload'], function(){
+  var layedit = layui.layedit,
+  upload=layui.upload,
+  $=layui.jquery;
+  
+  //普通图片上传
+  var uploadInst = upload.render({
+    elem: '#test1'
+    ,url: '/upload/blog_img'
+    ,before: function(obj){
+      //预读本地文件示例，不支持ie8
+      obj.preview(function(index, file, result){
+        $('#img1').attr('src', result); //图片链接（base64）
+      });
+    }
+    ,done: function(res){
+      //如果上传失败
+      if(res.code > 0){
+        return layer.msg('上传失败');
+      }
+      //上传成功
+      $('#img1').attr('src',res.data.src);
+      $("[name='blog_img.img_src']").attr("value",res.data.src);
+    }
+    ,error: function(){
+      //演示失败状态，并实现重传
+      var demoText = $('#demoText');
+      demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+      demoText.find('.demo-reload').on('click', function(){
+        uploadInst.upload();
+      });
+    }
+  });
+  layedit.build('editor'); //建立编辑器
+  $("#submit").on("click",function(){
+	  var demo1=$("#appreciate").prop('checked');
+	  var demo2=$("#comment").prop('checked');
+  	  if(demo1==true){
+  		$("[name='blog_appreciate']").attr("value",'1')
+  	  }else{
+  		$("[name='blog_appreciate']").attr("value",'0')
+  	  }
+  	if(demo2==true){
+  		$("[name='blog_comment']").attr("value",'1')
+  	  }else{
+  		$("[name='blog_comment']").attr("value",'0')
+  	  }
+	  $.ajax({
+		  type:"POST",
+		  url:"/update/blog",
+		  data:$('#frm').serialize(),
+		  dataType:"json",
+		  statusCode: {304: function() {
+			  alert("修改失败")
+			  },500:function(){
+				  alert("服务器出错")
+			  },200:function(){
+				alert("修改成功");
+				window.parent.location.reload();
+			  }
+		}
+	  });
+  });
+});
+</script>
+<body>
+<form id="frm">
+<div class="layui-fluid layui-anim layui-anim-upbit" id="LAY-article-add" style="padding-bottom: 50px;">
+    <div class="layui-row layui-col-space20 layui-form">
+    	<input type="hidden" name="_method" value="put">
+        <input name="id" type="hidden" th:value="${blog.id}" required lay-required>
+        <input name="blog_date" type="hidden" th:value="${#dates.format(blog.blog_date,'yyyy-MM-dd HH:mm:ss')}">
+        <input name="blog_click" type="hidden" th:value="${blog.blog_click}">
+        <input name="blog_user" type="hidden" th:value="${blog.blog_user}">
+        <input name="blog_comment" type="hidden">
+        <input name="blog_appreciate" type="hidden">
+        <input name="blog_img.img_src" type="hidden" th:value="${blog.blog_img.img_src}">
+        <div class="layui-col-md9">
+            <div class="layui-card">
+                <div class="layui-card-header">标题</div>
+                <div class="layui-card-body" style="padding-top: 25px;">
+                    <div class="layui-form-item">
+                        <input type="text" name="blog_name" required lay-verify="required" placeholder="请输入文章标题"
+                               th:value="${blog.blog_name}"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">博客封面:</div>
+                <div class="layui-card-body" style="width: 150px">
+                    <div class="layui-upload">
+					  <button type="button" class="layui-btn" id="test1">上传图片</button>
+					  <div class="layui-upload-list">
+					    <img class="layui-upload-img" id="img1" style="width: 100px;height: 100px;" th:src="${blog.blog_img.img_src}">
+					    <p id="demoText"></p>
+					  </div>
+					</div>   
+                </div>
+            </div>    
+        	<div class="layui-card">
+                <div class="layui-card-header">分类</div>
+                <div class="layui-card-body" style="width: 150px">
+                    <label>
+                        <select name="blog_type" >
+                            <option value="">请选择分类</option>
+                            <option th:each="type:${blogtype}"
+                                    th:value="${type.id}"
+                                    th:text="${type.name}"
+                                    th:selected="${blog.blog_type eq type.id}"></option>
+                        </select>
+                    </label>
+                </div>
+            </div>    
+			
+            <div class="layui-card">
+                <div class="layui-card-header">摘要</div>
+                <div class="layui-card-body">
+                    <textarea name="blog_article" placeholder="不填写摘要则系统自动生成" class="layui-textarea"
+                              th:utext="${blog.blog_article}" style="min-height: 300px;"></textarea>
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">内容编辑</div>
+                <div class="layui-card-body">
+                    <hr>
+                    <div id="content-editor" style="max-width: 1366px;">
+                         <textarea id="editor" name="blog_text" placeholder="输入内容" style="display: none;"
+                                   th:utext="${blog.blog_text}"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">文章设置</div>
+                <div class="layui-card-body">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">评论功能</label>
+                        <div class="layui-inline">
+                            <input type="checkbox" id="comment" lay-skin="switch" 
+                        	lay-text="开启|关闭" th:checked="${blog.blog_comment eq 1}" title="赞赏">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">打赏功能</label>
+                        <div class="layui-inline">
+                        <input type="checkbox" id="appreciate" lay-skin="switch" 
+                        lay-text="开启|关闭" th:checked="${blog.blog_appreciate eq 1}" title="赞赏">
+                        </div>
+                    </div>
+                    <!--  <div class="layui-inline">
+                        <label class="layui-form-label">转载/原创</label>
+                        <div class="layui-inline">
+                            <input type="checkbox" name="reprinted" value="true" lay-skin="switch"
+                                   lay-text="转载|原创"
+                                   th:checked="${editArticle.reprinted}"
+                                   title="评论">
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">撰写完成</div>
+                <div class="layui-card-body">
+                    <div class="layui-btn-container">
+                        <button id="submit" class="layui-btn">更新文章</button>
+                        <button class="layui-btn layui-btn-primary" lay-filter="draftSubmit">返回</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+</form>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+    <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css">
+    <link rel="stylesheet" href="/blog/css/style.css">
+<style>
+
+.demo{
+	margin : 25px 25px 25px 25px;
+	width: 166px;
+	height: 136px;
+	text-align:center;
+	box-shadow:0 0 2px 2px #f8f8f8;
+	/*webkit-filter: drop-shadow(10px 10px 10px rgba(0,0,0,.5));
+     filter: drop-shadow(10px 10px 10px rgba(0,0,0,.5));
+     transition-duration:0.1s;
+     */
+     transition: all 0.3s;
+     -moz-box-shadow: 2px 2px 10px #909090;
+	 -webkit-box-shadow: 2px 2px 10px #909090;
+	 box-shadow:2px 2px 10px #909090;
+}
+.demo1{
+	margin : 25px 25px 25px 25px;
+	width: 166px;
+	height: 136px;
+	text-align:center;
+	box-shadow:0 0 2px 2px #f8f8f8;
+	transition: all 0.3s;
+}
+.demo1:hover{
+	transform: scale(1.1);
+}
+.box{
+	display: flex;
+	flex-flow:row wrap;
+}
+</style>
+</head>
+
+<script type="text/javascript" src="/layuiadmin/layui/layui.js"></script>
+<script type="text/javascript">
+layui.config({
+    base: 'imges/js/'
+}).extend({
+    clock: 'clock'
+    , article: 'article'
+    , note: 'note'
+});
+layui.use(['form','jquery','layer','element'], function(){
+	var form=layui.form,
+	layer=layui.layer,
+	element = layui.element,
+	$=layui.jquery;
+	var $body = $("body");
+	$(".demo").hover(
+		  function () {
+			$(this).attr("class","demo1");
+		  },
+		  function () {
+			$(this).attr("class","demo");
+		  }
+		);
+	layer.photos({
+		  photos: ".photos"
+		  ,anim: 5
+		});
+	$("[name='img']").each(function(i){
+		   var src=$(this).attr("src");
+		   $(this).attr("layer-src",src);
+	 });
+	
+	var ss=$("#current-datetime");
+	function changetime(){
+        var time=new Date();
+        var year=time.getFullYear();
+        var month = time.getMonth() + 1;
+        var day = time.getDate();
+        var week = "日一二三四五六".charAt(time.getDay());
+		//获取当前小时分钟和秒
+		var hour = time.getHours();
+		var minute = time.getMinutes();
+		var second = time.getSeconds();
+		ss.empty();
+		ss.append(year+"年"+month+"月"+day+"日"+"星期"+week+"	"+hour+":"+minute+":"+second);
+    }
+    changetime();
+    setInterval(function(){
+        changetime();
+    },1000)
+});
+</script>
+<body>
+	<div class="header">
+    <div class="layui-container">
+        <div class="layui-row nav-header">
+            <!--logo-->
+            <div class="layui-col-xs9 layui-col-sm3 layui-col-md3  animated flipInX">
+                <a class="logo" href="//"><i class="fa fa-graduation-cap"></i>&nbsp;BMY's Note</a>
+            </div>
+            <!--logo结束-->
+            <!--index页面的右上方导航-->
+            <div class="layui-col-xs3 layui-col-sm-offset2 layui-col-sm7 layui-hide-md layui-hide-lg nav-btn">
+                <a href="javascript:void(0);" id="side-nav"><i class="fa fa-navicon"></i> </a>
+            </div>
+            <div class="layui-col-md-offset2 layui-col-md7 layui-hide-sm layui-hide-xs layui-show-lg-inline-block layui-show-md-inline-block nav-btn">
+                <a href="/list"><i class="layui-icon">&#xe68e;</i> HOME</a>
+                <a href="/note" class="active"><i class="layui-icon">&#xe609;</i> NOTE</a>
+                <a href="https://github.com/miyakowork" target="_blank"><i class="fa fa-github"
+                                                                           style="font-size: 18px;"></i> GITHUB</a>
+                <a href="mine.html"><i class="layui-icon">&#xe715;</i> MINE</a>
+            </div>
+            <!--右上方导航结束-->
+        </div>
+    	</div>
+    </div>
+    <div id="note-body" class="layui-container"> 
+    <div id="note-operate" class="layui-row">
+       <div class="layui-container">
+		    <blockquote class="layui-elem-quote">
+		        个人相册展示
+		         <div class="clock layui-show-md-inline-block layui-show-lg-inline-block layui-hide-xs layui-hide-sm"><span
+		         class="clock-font">当前日期</span>：<span id="current-datetime" style="color: red"></span></div>
+		    </blockquote>
+		</div>
+    </div>
+    <hr class="header-hr">
+      <!-- <div class="search_left"><img src="/user/a.jpg" class="box" style="width:150px;height:150px"/></div> --> 
+		<span class="layui-breadcrumb">
+		  <a href="/note">相册页</a>
+		  <a><cite th:text="${album.img_title}"></cite></a>
+		</span>
+		<div class="box">
+          <div class="demo" th:each="picture:${picture}">
+          	<span class="photos">
+	            <img name="img" th:alt="${picture.img_name}"  layer-src="" th:src="${picture.img_src}" style="width: 150px;height: 100px" />
+	          	<div th:text="${picture.img_title}"></div>
+          	</span>
+          </div>
+		</div>
+</div>
+	
+</body>
+</html>

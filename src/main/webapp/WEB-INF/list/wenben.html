@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../layuiadmin/layui/css/layui.css"  media="all">
+  <style type="text/css">
+button{
+	margin-right: 0px;
+}
+  </style>
+</head>
+<script type="text/javascript" src="../layuiadmin/layui/layui.js" charset="UTF-8"></script>
+<script>
+layui.use(['form', 'layedit','jquery'], function(){
+	var form=layui.form,
+	$=layui.jquery,
+	layedit=layui.layedit;
+	var demo=layedit.build('demo');
+	var demo1=params    //评论用户id
+	var demo2=params2  //博客 id
+	var demo3=params3  //当前用户id
+	var demo4=params4
+	$("[name='blog_id']").attr("value",demo2);
+	$("[name='reply_id']").attr("value",demo1)
+	$("#buutton").on("click",function(){
+			var a=layedit.getContent(demo);
+			if(demo1==demo3){
+				alert("不能评论自己的信息!!!");
+			}
+			if(a.length==0){
+				alert("请填写内容后，再发表")
+			}else{
+				var blog_id=$("[name='blog_id']").attr("value")
+				var reply_id=$("[name='reply_id']").attr("value")
+				$.ajax({
+					  type:"POST",
+					  url:"/insert/commnts",
+					  data:{"comment_text":a,"blog_id":blog_id,"reply_id":reply_id} ,
+					  dataType:"json",
+					  statusCode: {404: function() {
+						    alert("当前未登陆，请登陆后再继续此操作");
+						    window.location.replace("/?dizhi="+demo4+"");
+						  },500:function(){
+							  alert("500");
+						  },200:function(){
+							var index = parent.layer.getFrameIndex(window.name); //获取iframe窗口索引
+							layer.close(index); //如果设定了确定按钮回调,需进行手工关闭
+							parent.layer.close(index);//关闭iframe
+							parent.location.reload();
+						  }
+						  }
+			});
+			}
+	});
+	
+});
+</script>
+<body>
+<textarea id="demo">
+
+</textarea><br/>
+<input type="hidden" name="blog_id">
+<input type="hidden" name="reply_id">
+<div style="text-align:right;">
+<button id="buutton" type="button" class="layui-btn" style="margin-right: 20px">发表</button>
+</div>
+</body>
+</html>

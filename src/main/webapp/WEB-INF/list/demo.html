@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css"  media="all">
+  <link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+</head>
+<script type="text/javascript" src="/layuiadmin/layui/layui.js" charset="UTF-8"></script>
+<script type="text/javascript">
+layui.config({
+    base: '../layuiadmin/' //静态资源所在路径
+  }).extend({
+    index: 'lib/index' //主入口模块
+  }).use('index');
+layui.use(['form','jquery'], function(){
+	form=layui.form,
+	$=layui.jquery;
+	var href=$("#admin").attr("href");
+	$("#admin").attr("lay-href",href)
+	$("#admin").removeAttr("href");
+	$("#tuichu").on("click",function(){
+		window.location.replace("/Logoff");
+	});
+});
+</script>
+
+<body class="layui-layout-body">
+	<div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+      <div class="layui-header">
+        <!-- 头部区域 -->
+        <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item layui-hide-xs" lay-unselect>
+            <a href="/list" target="_blank" title="前台">
+              <i class="layui-icon layui-icon-website"></i>
+            </a>
+          </li>
+          <li class="layui-nav-item" lay-unselect>
+            <a href="/demo" layadmin-event="refresh" title="刷新">
+              <i class="layui-icon layui-icon-refresh-3"></i>
+            </a>
+          </li>
+          </ul>
+            		后台账号
+          <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+          <li class="layui-nav-item" lay-unselect>
+            <a href="javascript:;">
+              <cite th:text="${admin.username}"></cite>
+            </a>
+            <dl class="layui-nav-child">
+	          <dd style="text-align: center;"><a><img th:src="${admin.admin_img}" style="height:50px;width:50px" class="layui-circle"></a>
+			  </dd>
+			  <hr>
+              <dd><a id="admin" lay-href="/query/admin">基本资料</a></dd>
+              <hr>
+              <dd id="tuichu" style="text-align: center;"><a>退出</a></dd>
+            </dl>
+          </li>
+        </ul>
+        
+      </div>
+      <!-- 侧边栏 -->
+      <div class="layui-side layui-side-menu">
+        <div class="layui-side-scroll">
+          <div class="layui-logo" lay-href="home/console.html">
+            <span>layuiAdmin</span>
+          </div>
+	          <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+	            <li data-name="home" class="layui-nav-item layui-nav-itemed">
+	              <a href="javascript:;" lay-tips="主页" lay-direction="2">
+	                <i class="layui-icon layui-icon-home"></i>
+	                <cite>发布内容</cite>
+	              </a>
+	              <dl class="layui-nav-child">
+	                <dd data-name="/demo" class="layui-this">
+	                </dd>
+	                <dd data-name="blog_insertUI">
+	                  <a lay-href="/blog_insertUI">博客编辑</a>
+	                </dd>
+	                <dd data-name="console">
+	                  <a lay-href="/console2">博客搜索</a>
+	                </dd>
+	              </dl>
+	            </li>
+	            <li data-name="component" class="layui-nav-item">
+		              <a href="javascript:;" lay-tips="分类" lay-direction="2">
+		                <i class="layui-icon layui-icon-component"></i>
+		                <cite>分类</cite>
+		              </a>
+                  	<dl class="layui-nav-child">  
+                    <dd data-name="demo1"> 
+                      <a lay-href="/type_list">类别</a> 
+                    </dd>
+                    <dd data-name="demo1"> 
+                      <a lay-href="/type_list">关键字</a> 
+                    </dd>
+                    <dd data-name="demo1"> 
+                      <a lay-href="/type_list">友情链接</a> 
+                    </dd>
+                  	</dl>  
+                 </li>
+                 <li data-name="note" class="layui-nav-item">
+		              <a href="javascript:;" lay-tips="个人相册管理" lay-direction="2">
+		                <i class="layui-icon layui-icon-component"></i>
+		                <cite>个人相册</cite>
+		              </a>
+                  	<dl class="layui-nav-child">  
+                    <dd data-name="demo1"> 
+                      <a lay-href="/note_insert">添加相册</a> 
+                    </dd>
+                    <dd data-name="demo1"> 
+                      <a lay-href="/note_query">查找相册</a> 
+                    </dd>
+                  	</dl>  
+                  	</li>
+	          </ul>
+        	</div>
+      	</div>
+		<div class="layadmin-pagetabs" id="LAY_app_tabs">
+        <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+        <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+        <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+          <ul class="layui-tab-title" id="LAY_app_tabsheader">
+            <li lay-id="/console" lay-attr="/console" class="layui-this"><i class="layui-icon layui-icon-home"></i></li>
+          </ul>
+        </div>
+      </div>
+		<div class="layui-body" id="LAY_app_body">
+			<div class="layadmin-tabsbody-item layui-show">
+			   <iframe src="" frameborder="0" class="layadmin-iframe"></iframe>
+			</div>
+		</div>
+		<div class="layadmin-body-shade" layadmin-event="shade"></div>
+   </div>
+   </div>
+</body>
+</html>
